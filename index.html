@@ -274,7 +274,7 @@
             width: 50px;
             height: 50px;
             border: 4px solid #475569;
-            border-top: 4px solid #ef4444;
+            border-top: 4px solid #3b82f6;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin-bottom: 20px;
@@ -283,32 +283,6 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
-        }
-        
-        .alert-section {
-            background: linear-gradient(145deg, #7f1d1d 0%, #991b1b 100%);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-            border: 1px solid #dc2626;
-        }
-        
-        .alert-section h3 {
-            color: #fecaca;
-            margin-bottom: 15px;
-            font-size: 1.2rem;
-        }
-        
-        .alert-item {
-            background: rgba(0,0,0,0.2);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            border-left: 4px solid #ef4444;
-        }
-        
-        .alert-item:last-child {
-            margin-bottom: 0;
         }
         
         .insight-grid {
@@ -416,11 +390,6 @@
         <div id="dashboard" style="display: none;">
             <div id="dataSource" class="data-source">
                 📊 Data loaded from Google Sheets • Last updated: <span id="lastUpdated"></span>
-            </div>
-            
-            <div id="alertSection" class="alert-section" style="display: none;">
-                <h3>🚨 High-Risk Practitioners Alert</h3>
-                <div id="alertContent"></div>
             </div>
             
             <div class="practitioners-table">
@@ -739,17 +708,9 @@
             document.getElementById('practitionerRiskIndicator').innerHTML = getRiskIndicator(avgPractitionerDischarge, 'practitioner');
             document.getElementById('overallRiskIndicator').innerHTML = getRiskIndicator(avgOverallDischarge, 'overall');
             
-            // Check for high-risk practitioners and show alerts
+            // Check for high-risk practitioners (removed alert display)
             const highRiskPractitioners = data.filter(p => p.patientDischarge > 15 || p.overallDischarge > 20);
-            if (highRiskPractitioners.length > 0) {
-                document.getElementById('alertSection').style.display = 'block';
-                const alertContent = document.getElementById('alertContent');
-                alertContent.innerHTML = highRiskPractitioners.map(p => 
-                    `<div class="alert-item">
-                        <strong>${p.name}</strong>: ${p.patientDischarge.toFixed(1)}% patient discharge, ${p.overallDischarge.toFixed(1)}% overall
-                    </div>`
-                ).join('');
-            }
+            // Alert section removed as requested
             
             // Update quick summary
             updateQuickSummary(data, totalAppointments, avgPatientDischarge, avgPractitionerDischarge, avgOverallDischarge);
@@ -979,15 +940,15 @@
                             {
                                 label: 'Patient Discharge %',
                                 data: data.map(p => p.patientDischarge),
-                                backgroundColor: 'rgba(239, 68, 68, 0.8)',
-                                borderColor: '#ef4444',
+                                backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                                borderColor: '#3b82f6',
                                 borderWidth: 2
                             },
                             {
                                 label: 'Practitioner Discharge %',
                                 data: data.map(p => p.practitionerDischarge),
-                                backgroundColor: 'rgba(245, 158, 11, 0.8)',
-                                borderColor: '#f59e0b',
+                                backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                                borderColor: '#10b981',
                                 borderWidth: 2
                             }
                         ]
@@ -1024,7 +985,7 @@
                         labels: ['Patient Initiated', 'Practitioner Initiated'],
                         datasets: [{
                             data: [totalPatientDischarges, totalPractitionerDischarges],
-                            backgroundColor: ['#ef4444', '#f59e0b'],
+                            backgroundColor: ['#3b82f6', '#10b981'],
                             borderWidth: 3,
                             borderColor: '#1e293b'
                         }]
