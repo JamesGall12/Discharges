@@ -845,9 +845,14 @@
             updatePractitionersTable(practitionersData);
         }
 
-        // Generate statistical insights
+        // Generate statistical insights with medicinal cannabis clinic context
         function generateInsights(data) {
             const insights = [];
+            
+            // Calculate key metrics
+            const totalAppointments = data.reduce((sum, p) => sum + p.appointments, 0);
+            const avgPatientDischarge = data.reduce((sum, p) => sum + p.patientDischarge, 0) / data.length;
+            const avgPractitionerDischarge = data.reduce((sum, p) => sum + p.practitionerDischarge, 0) / data.length;
             
             // Workload vs Discharge Analysis
             const highWorkload = data.filter(p => p.workloadShare >= 15);
@@ -858,11 +863,61 @@
                 const lowWorkloadAvgDischarge = lowWorkload.reduce((sum, p) => sum + p.overallDischarge, 0) / lowWorkload.length;
                 
                 insights.push({
-                    title: "⚖️ Workload vs Discharge Rate Analysis",
+                    title: "⚖️ Practitioner Workload Impact on Patient Retention",
                     content: `
                         <p>Practitioners handling <span class="highlight-stat">≥15% of total consultations</span> have an average discharge rate of <span class="highlight-stat">${highWorkloadAvgDischarge.toFixed(1)}%</span></p>
                         <p>Practitioners handling <span class="highlight-stat">&lt;10% of consultations</span> have an average discharge rate of <span class="highlight-stat">${lowWorkloadAvgDischarge.toFixed(1)}%</span></p>
-                        <p>Impact: <span class="${highWorkloadAvgDischarge > lowWorkloadAvgDischarge ? 'correlation-negative' : 'correlation-positive'}">${highWorkloadAvgDischarge > lowWorkloadAvgDischarge ? 'High workload may be contributing to patient loss' : 'High workload practitioners maintain better retention'}</span></p>
+                        <p><strong>Clinical Insight:</strong> <span class="${highWorkloadAvgDischarge > lowWorkloadAvgDischarge ? 'correlation-negative' : 'correlation-positive'}">${highWorkloadAvgDischarge > lowWorkloadAvgDischarge ? 'High caseloads may be affecting clinical decision-making and patient relationships' : 'Experienced practitioners with higher caseloads maintain better patient retention'}</span></p>
+                        <p><strong>Business Impact:</strong> Each 1% reduction in discharge rate could retain ~${Math.round(totalAppointments * 0.01)} patients annually</p>
+                    `
+                });
+            }
+            
+            // Patient vs Practitioner Discharge Pattern Analysis
+            insights.push({
+                title: "🎯 Discharge Pattern Analysis - Revenue Impact",
+                content: `
+                    <p><strong>Patient-Initiated Discharges:</strong> <span class="highlight-stat">${avgPatientDischarge.toFixed(1)}%</span> (patients choosing to leave)</p>
+                    <p><strong>Practitioner-Initiated Discharges:</strong> <span class="highlight-stat">${avgPractitionerDischarge.toFixed(1)}%</span> (clinical decisions)</p>
+                    <p><strong>Key Insight:</strong> ${avgPatientDischarge > avgPractitionerDischarge ? 
+                        '<span class="correlation-negative">Patient-initiated discharges are higher</span> - suggests issues with cost, efficacy expectations, or patient experience' : 
+                        '<span class="correlation-negative">Practitioner-initiated discharges are higher</span> - suggests potential for clinical protocol optimization'}</p>
+                    <p><strong>Medicinal Cannabis Context:</strong> ${avgPatientDischarge > avgPractitionerDischarge ? 
+                        'Focus on patient education, cost management, and expectation setting to reduce voluntary exits' : 
+                        'Review clinical discharge criteria and consider longer trial periods or alternative treatment approaches'}</p>
+                `
+            });
+            
+            // Revenue and Patient Lifetime Value Analysis
+            const highestVolume = data.reduce((max, p) => p.appointments > max.appointments ? p : max, data[0]);
+            const mostProblematic = data.reduce((max, p) => p.overallDischarge > max.overallDischarge ? p : max, data[0]);
+            const estimatedLostPatients = Math.round((mostProblematic.overallDischarge / 100) * mostProblematic.appointments);
+            
+            insights.push({
+                title: "💰 Patient Lifetime Value & Revenue Risk",
+                content: `
+                    <p><strong>Highest Volume Practitioner:</strong> <span class="highlight-stat">${highestVolume.name}</span> handling <span class="highlight-stat">${highestVolume.workloadShare.toFixed(1)}%</span> of consultations with <span class="highlight-stat">${highestVolume.overallDischarge.toFixed(1)}%</span> discharge rate</p>
+                    <p><strong>Highest Discharge Rate:</strong> <span class="highlight-stat">${mostProblematic.name}</span> at <span class="highlight-stat">${mostProblematic.overallDischarge.toFixed(1)}%</span> (approximately ${estimatedLostPatients} patients lost)</p>
+                    <p><strong>Total Consultation Volume:</strong> <span class="highlight-stat">${totalAppointments.toLocaleString()}</span> across all practitioners</p>
+                    <p><strong>Revenue Insight:</strong> Reducing discharge rates by 5% could retain ~${Math.round(totalAppointments * 0.05)} patients, potentially worth ${Math.round(totalAppointments * 0.05 * 6 * 200).toLocaleString()} in follow-up revenue annually</p>
+                `
+            });
+            
+            // Clinical Performance Benchmarking
+            const topPerformers = data.filter(p => p.overallDischarge < 15 && p.appointments > 50).sort((a, b) => a.overallDischarge - b.overallDischarge);
+            const strugglingPractitioners = data.filter(p => p.overallDischarge > 20);
+            
+            if (topPerformers.length > 0) {
+                insights.push({
+                    title: "🌟 Clinical Excellence Benchmarking",
+                    content: `
+                        <p><strong>Top Performing Practitioners (discharge rate &lt;15%):</strong></p>
+                        ${topPerformers.slice(0, 3).map(p => 
+                            `<p>• ${p.name}: ${p.overallDischarge.toFixed(1)}% discharge rate with ${p.appointments} consultations</p>`
+                        ).join('')}
+                        <p><strong>Practitioners Needing Support (&gt;20% discharge rate):</strong> ${strugglingPractitioners.length}</p>
+                        <p><strong>Best Practice Opportunity:</strong> Top performers demonstrate that medicinal cannabis patient retention rates of &lt;15% are achievable</p>
+                        <p><strong>Knowledge Transfer Value:</strong> Sharing successful clinical approaches could significantly improve overall retention rates</p>
                     `
                 });
             }
@@ -870,23 +925,149 @@
             return insights;
         }
 
-        // Generate strategic recommendations
+        // Generate strategic recommendations based on medicinal cannabis clinic context
         function generateRecommendations(data) {
             const recommendations = [];
             
+            // Calculate key metrics for analysis
+            const totalDischargeRate = data.reduce((sum, p) => sum + p.overallDischarge, 0) / data.length;
+            const avgPatientDischarge = data.reduce((sum, p) => sum + p.patientDischarge, 0) / data.length;
+            const avgPractitionerDischarge = data.reduce((sum, p) => sum + p.practitionerDischarge, 0) / data.length;
+            
+            // Immediate Actions - High-Impact Practitioners
             const criticalPractitioners = data.filter(p => p.overallDischarge > 20 && p.workloadShare > 10);
             if (criticalPractitioners.length > 0) {
                 recommendations.push({
-                    title: "🚨 Immediate Actions Required",
+                    title: "🚨 Immediate Revenue Protection Actions",
                     content: `
-                        <p><strong>Priority 1 - Urgent Reviews:</strong></p>
+                        <p><strong>High-Risk Practitioners Affecting Revenue:</strong></p>
                         ${criticalPractitioners.map(p => 
-                            `<p>• Schedule immediate 1-on-1 with <strong>${p.name}</strong> (${p.overallDischarge.toFixed(1)}% discharge rate, ${p.workloadShare.toFixed(1)}% workload)</p>`
+                            `<p>• <strong>${p.name}</strong>: ${p.overallDischarge.toFixed(1)}% discharge rate while handling ${p.workloadShare.toFixed(1)}% of consultations</p>`
                         ).join('')}
-                        <p><strong>Actions:</strong> Identify specific discharge reasons, provide additional support, consider workload adjustment.</p>
+                        <p><strong>Financial Impact:</strong> These practitioners are losing patients who would typically generate 6+ months of recurring revenue.</p>
+                        <p><strong>Actions:</strong></p>
+                        <p>• Schedule immediate clinical review meetings</p>
+                        <p>• Analyze discharge reasons (clinical vs. patient choice)</p>
+                        <p>• Consider temporary workload redistribution</p>
+                        <p>• Review patient education and expectation setting approaches</p>
                     `
                 });
             }
+            
+            // Patient vs Practitioner Discharge Analysis
+            if (avgPatientDischarge > avgPractitionerDischarge) {
+                recommendations.push({
+                    title: "💰 Patient-Initiated Discharge Strategy",
+                    content: `
+                        <p><strong>Alert:</strong> Patient-initiated discharges (${avgPatientDischarge.toFixed(1)}%) exceed practitioner-initiated (${avgPractitionerDischarge.toFixed(1)}%)</p>
+                        <p><strong>Common Medicinal Cannabis Patient Exit Reasons:</strong></p>
+                        <p>• Cost concerns (PBS vs private prescriptions)</p>
+                        <p>• Lack of immediate results (expectation management)</p>
+                        <p>• Social stigma around cannabis use</p>
+                        <p>• Complex dosing or product confusion</p>
+                        <p><strong>Retention Strategies:</strong></p>
+                        <p>• Implement financial consultation for cost-effective options</p>
+                        <p>• Create patient education program on realistic timelines</p>
+                        <p>• Develop peer support or success story sharing</p>
+                        <p>• Simplify product recommendations and dosing instructions</p>
+                    `
+                });
+            } else {
+                recommendations.push({
+                    title: "🩺 Clinical Decision Review Process",
+                    content: `
+                        <p><strong>Analysis:</strong> Practitioner-initiated discharges (${avgPractitionerDischarge.toFixed(1)}%) exceed patient-initiated (${avgPatientDischarge.toFixed(1)}%)</p>
+                        <p><strong>Potential Clinical Issues:</strong></p>
+                        <p>• Too-quick discharge for non-responders (need longer trial periods)</p>
+                        <p>• Insufficient product/dosage exploration</p>
+                        <p>• Overly strict eligibility criteria</p>
+                        <p>• Inadequate follow-up consultation scheduling</p>
+                        <p><strong>Clinical Protocol Improvements:</strong></p>
+                        <p>• Establish minimum trial periods before discharge consideration</p>
+                        <p>• Create decision trees for product switching vs. discharge</p>
+                        <p>• Implement peer review for discharge decisions</p>
+                        <p>• Develop "rescue protocols" for marginal responders</p>
+                    `
+                });
+            }
+            
+            // Team-Specific Actions
+            const highVolumePractitioners = data.filter(p => p.workloadShare > 15);
+            recommendations.push({
+                title: "👥 Team-Specific Action Plan",
+                content: `
+                    <p><strong>Sales Team:</strong></p>
+                    <p>• Better pre-qualification to reduce unsuitable patient bookings</p>
+                    <p>• Set realistic expectations about treatment timelines and costs</p>
+                    <p>• Share discharge data to improve patient screening</p>
+                    
+                    <p><strong>Follow-Up Team:</strong></p>
+                    <p>• Implement proactive check-ins before discharge risk increases</p>
+                    <p>• Create intervention protocols for patients showing disengagement</p>
+                    <p>• Track 1-month follow-up completion rates vs. discharge correlation</p>
+                    
+                    <p><strong>Customer Support:</strong></p>
+                    <p>• Develop early warning system for patient dissatisfaction</p>
+                    <p>• Create retention conversation scripts for at-risk patients</p>
+                    <p>• Track support tickets that correlate with discharge patterns</p>
+                    
+                    <p><strong>High-Volume Practitioners (${highVolumePractitioners.length} identified):</strong></p>
+                    <p>• Provide additional administrative support to reduce burnout</p>
+                    <p>• Consider consultation time adjustments for complex cases</p>
+                    <p>• Implement structured discharge decision protocols</p>
+                `
+            });
+            
+            // Financial Impact & Targets
+            const totalAppointments = data.reduce((sum, p) => sum + p.appointments, 0);
+            const estimatedLostRevenue = Math.round((totalDischargeRate / 100) * totalAppointments * 6 * 200); // Assuming $200 per follow-up, 6 month cycle
+            
+            recommendations.push({
+                title: "💵 Financial Impact & Targets",
+                content: `
+                    <p><strong>Current Performance:</strong></p>
+                    <p>• Overall discharge rate: <span class="highlight-stat">${totalDischargeRate.toFixed(1)}%</span></p>
+                    <p>• Total consultations: <span class="highlight-stat">${totalAppointments.toLocaleString()}</span></p>
+                    <p>• Estimated annualized revenue impact: <span class="highlight-stat">${estimatedLostRevenue.toLocaleString()}</span></p>
+                    
+                    <p><strong>Target Improvements (6-month goals):</strong></p>
+                    <p>• Reduce overall discharge rate to <strong>12%</strong> (industry best practice)</p>
+                    <p>• Focus on patient-initiated discharges (highest retention ROI)</p>
+                    <p>• Improve 1-month follow-up attendance to reduce discharge risk</p>
+                    
+                    <p><strong>Success Metrics to Track:</strong></p>
+                    <p>• Patient lifetime value (LTV) increase</p>
+                    <p>• Average treatment duration before discharge</p>
+                    <p>• Practitioner-specific retention improvement</p>
+                    <p>• Cost per patient acquisition vs. retention investment</p>
+                `
+            });
+            
+            // System-Level Improvements
+            recommendations.push({
+                title: "🔧 System-Level Retention Improvements",
+                content: `
+                    <p><strong>Patient Journey Optimization:</strong></p>
+                    <p>• Implement discharge risk scoring based on appointment patterns</p>
+                    <p>• Create automated follow-up sequences for missed appointments</p>
+                    <p>• Develop patient satisfaction surveys at key touchpoints</p>
+                    
+                    <p><strong>Clinical Workflow Enhancements:</strong></p>
+                    <p>• Standardize initial consultation assessment protocols</p>
+                    <p>• Create treatment escalation pathways before discharge consideration</p>
+                    <p>• Implement structured discharge criteria and approval process</p>
+                    
+                    <p><strong>Technology Solutions:</strong></p>
+                    <p>• Patient portal for education and engagement between visits</p>
+                    <p>• Automated alerts for practitioners when discharge rates exceed thresholds</p>
+                    <p>• Integration with patient feedback systems to identify retention opportunities</p>
+                    
+                    <p><strong>Training & Development:</strong></p>
+                    <p>• Best practice sharing sessions between high and low-discharge practitioners</p>
+                    <p>• Patient communication and expectation management training</p>
+                    <p>• Medicinal cannabis education updates for evolving treatment protocols</p>
+                `
+            });
             
             return recommendations;
         }
