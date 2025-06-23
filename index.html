@@ -401,7 +401,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>⚠️ Greencare Discharge Analytics</h1>
+            <h1>📊 Greencare Discharge Analysis</h1>
             <p>Patient & Practitioner Discharge Monitoring</p>
             <p class="date">June 2025 • Risk Assessment Dashboard</p>
         </div>
@@ -419,6 +419,18 @@
             <div id="alertSection" class="alert-section" style="display: none;">
                 <h3>🚨 High-Risk Practitioners Alert</h3>
                 <div id="alertContent"></div>
+            </div>
+            
+            <div class="practitioners-table" style="margin-bottom: 30px;">
+                <div class="table-header" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">
+                    <h2 style="text-align: center;">📋 Quick Summary</h2>
+                    <p style="text-align: center;">Key performance metrics at a glance</p>
+                </div>
+                <div style="padding: 20px;">
+                    <div id="quickSummaryContent">
+                        <!-- Quick summary will be populated here -->
+                    </div>
+                </div>
             </div>
             
             <div class="metrics-grid">
@@ -487,9 +499,9 @@
             </div>
             
             <div class="practitioners-table">
-                <div class="table-header">
-                    <h2>⚠️ Detailed Practitioner Analysis</h2>
-                    <p>Individual discharge rates and risk assessment</p>
+                <div class="table-header" style="background: linear-gradient(135deg, #475569 0%, #374151 100%);">
+                    <h2 style="text-align: center;">Detailed Practitioner Analysis</h2>
+                    <p style="text-align: center;">Individual discharge rates and risk assessment</p>
                 </div>
                 <table>
                     <thead>
@@ -512,8 +524,8 @@
             
             <div id="insightsSection" class="practitioners-table">
                 <div class="table-header" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">
-                    <h2>💡 Statistical Insights & Analysis</h2>
-                    <p>Data-driven insights accounting for consultation volume and statistical significance</p>
+                    <h2 style="text-align: center;">💡 Statistical Insights & Analysis</h2>
+                    <p style="text-align: center;">Data-driven insights accounting for consultation volume and statistical significance</p>
                 </div>
                 <div style="padding: 30px;">
                     <div id="insightsContent">
@@ -522,8 +534,20 @@
                 </div>
             </div>
             
+            <div id="recommendationsSection" class="practitioners-table">
+                <div class="table-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <h2 style="text-align: center;">🎯 Strategic Recommendations</h2>
+                    <p style="text-align: center;">Actionable steps to improve patient retention and operational efficiency</p>
+                </div>
+                <div style="padding: 30px;">
+                    <div id="recommendationsContent">
+                        <!-- Recommendations will be populated here -->
+                    </div>
+                </div>
+            </div>
+            
             <div class="update-info">
-                <h3>🔄 Auto-Update System</h3>
+                <h3 style="text-align: center;">🔄 Auto-Update System</h3>
                 <p><strong>How it works:</strong> This dashboard automatically pulls the latest discharge data from your Google Sheets every time the page loads. Data is analyzed to identify high-risk practitioners and discharge patterns.</p>
                 <p><strong>Risk Thresholds:</strong> Patient discharge >15% = High Risk • Practitioner discharge >10% = Review Required • Overall >20% = Critical</p>
             </div>
@@ -748,12 +772,48 @@
             // Update table
             updatePractitionersTable(data);
             
+            // Generate and update quick summary
+            updateQuickSummary(data, totalAppointments, avgPatientDischarge, avgPractitionerDischarge, avgOverallDischarge);
+            
             // Generate and update insights
             const insights = generateInsights(data);
             updateInsightsSection(insights);
             
+            // Generate and update recommendations
+            const recommendations = generateRecommendations(data);
+            updateRecommendationsSection(recommendations);
+            
             // Update charts
             createDischargeCharts(data);
+        }
+        
+        // Update quick summary section
+        function updateQuickSummary(data, totalAppointments, avgPatientDischarge, avgPractitionerDischarge, avgOverallDischarge) {
+            const highRiskCount = data.filter(p => p.overallDischarge > 20).length;
+            const criticalWorkload = data.filter(p => p.workloadShare > 20).length;
+            const bestPerformer = data.reduce((min, p) => p.overallDischarge < min.overallDischarge ? p : min, data[0]);
+            
+            const content = document.getElementById('quickSummaryContent');
+            content.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    <div style="text-align: center; padding: 15px; background: rgba(59, 130, 246, 0.1); border-radius: 10px; border: 1px solid #3b82f6;">
+                        <h4 style="color: #3b82f6; margin-bottom: 8px;">Overall Performance</h4>
+                        <p style="color: #cbd5e1;">Average discharge rate: <strong>${avgOverallDischarge.toFixed(1)}%</strong></p>
+                        <p style="color: #cbd5e1;">Total consultations: <strong>${totalAppointments.toLocaleString()}</strong></p>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: rgba(16, 185, 129, 0.1); border-radius: 10px; border: 1px solid #10b981;">
+                        <h4 style="color: #10b981; margin-bottom: 8px;">Best Performer</h4>
+                        <p style="color: #cbd5e1;"><strong>${bestPerformer.name}</strong></p>
+                        <p style="color: #cbd5e1;">${bestPerformer.overallDischarge.toFixed(1)}% discharge rate, ${bestPerformer.workloadShare.toFixed(1)}% workload</p>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: rgba(245, 158, 11, 0.1); border-radius: 10px; border: 1px solid #f59e0b;">
+                        <h4 style="color: #f59e0b; margin-bottom: 8px;">Areas for Attention</h4>
+                        <p style="color: #cbd5e1;"><strong>${highRiskCount}</strong> practitioners with >20% discharge rate</p>
+                        <p style="color: #cbd5e1;"><strong>${criticalWorkload}</strong> practitioners handling >20% of workload</p>
+                    </div>
+                </div>
+            `;
+        }
         }
 
         // Update insights section
@@ -769,6 +829,113 @@
                     `).join('')}
                 </div>
             `;
+        }
+        
+        // Update recommendations section
+        function updateRecommendationsSection(recommendations) {
+            const content = document.getElementById('recommendationsContent');
+            content.innerHTML = `
+                <div class="insight-grid">
+                    ${recommendations.map(rec => `
+                        <div class="insight-card">
+                            <h4>${rec.title}</h4>
+                            ${rec.content}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        // Generate strategic recommendations based on data analysis
+        function generateRecommendations(data) {
+            const recommendations = [];
+            
+            // Immediate Actions
+            const criticalPractitioners = data.filter(p => p.overallDischarge > 20 && p.workloadShare > 10);
+            if (criticalPractitioners.length > 0) {
+                recommendations.push({
+                    title: "🚨 Immediate Actions Required",
+                    content: `
+                        <p><strong>Priority 1 - Urgent Reviews:</strong></p>
+                        ${criticalPractitioners.map(p => 
+                            `<p>• Schedule immediate 1-on-1 with <strong>${p.name}</strong> (${p.overallDischarge.toFixed(1)}% discharge rate, ${p.workloadShare.toFixed(1)}% workload)</p>`
+                        ).join('')}
+                        <p><strong>Actions:</strong> Identify specific discharge reasons, provide additional support, consider workload adjustment.</p>
+                    `
+                });
+            }
+            
+            // Workload Redistribution
+            const overloaded = data.filter(p => p.workloadShare > 20);
+            const underutilized = data.filter(p => p.workloadShare < 8 && p.overallDischarge < 15);
+            
+            if (overloaded.length > 0 && underutilized.length > 0) {
+                recommendations.push({
+                    title: "⚖️ Workload Redistribution Strategy",
+                    content: `
+                        <p><strong>Overloaded Practitioners (>20% workload):</strong></p>
+                        ${overloaded.map(p => `<p>• ${p.name}: ${p.workloadShare.toFixed(1)}% workload, ${p.overallDischarge.toFixed(1)}% discharge</p>`).join('')}
+                        <p><strong>Available Capacity:</strong></p>
+                        ${underutilized.map(p => `<p>• ${p.name}: ${p.workloadShare.toFixed(1)}% workload, ${p.overallDischarge.toFixed(1)}% discharge</p>`).join('')}
+                        <p><strong>Recommendation:</strong> Gradually redistribute 5-10% of consultations from overloaded to underutilized practitioners.</p>
+                    `
+                });
+            }
+            
+            // Training and Development
+            const highDischargeButGoodVolume = data.filter(p => p.overallDischarge > 15 && p.appointments > 50);
+            if (highDischargeButGoodVolume.length > 0) {
+                recommendations.push({
+                    title: "📚 Training & Development Focus",
+                    content: `
+                        <p><strong>Practitioners with high discharge rates but good patient volume:</strong></p>
+                        ${highDischargeButGoodVolume.map(p => 
+                            `<p>• ${p.name}: ${p.overallDischarge.toFixed(1)}% discharge rate (${p.appointments} appointments)</p>`
+                        ).join('')}
+                        <p><strong>Recommended Training Areas:</strong></p>
+                        <p>• Patient communication and engagement techniques</p>
+                        <p>• Expectation management and treatment planning</p>
+                        <p>• Stress management and burnout prevention</p>
+                        <p>• Best practices sharing from top performers</p>
+                    `
+                });
+            }
+            
+            // Best Practice Sharing
+            const topPerformers = data.filter(p => p.overallDischarge < 12 && p.appointments > 80).sort((a, b) => a.overallDischarge - b.overallDischarge);
+            if (topPerformers.length > 0) {
+                recommendations.push({
+                    title: "🌟 Best Practice Implementation",
+                    content: `
+                        <p><strong>Top Performing Practitioners:</strong></p>
+                        ${topPerformers.slice(0, 3).map(p => 
+                            `<p>• ${p.name}: ${p.overallDischarge.toFixed(1)}% discharge rate with ${p.appointments} appointments (${p.workloadShare.toFixed(1)}% workload)</p>`
+                        ).join('')}
+                        <p><strong>Actions:</strong></p>
+                        <p>• Conduct interviews to identify successful practices</p>
+                        <p>• Create mentorship pairings with struggling practitioners</p>
+                        <p>• Document and share successful patient engagement strategies</p>
+                        <p>• Consider peer-to-peer training sessions</p>
+                    `
+                });
+            }
+            
+            // System Improvements
+            const totalDischargeRate = data.reduce((sum, p) => sum + p.overallDischarge, 0) / data.length;
+            recommendations.push({
+                title: "🔧 System & Process Improvements",
+                content: `
+                    <p><strong>Current Average Discharge Rate:</strong> ${totalDischargeRate.toFixed(1)}%</p>
+                    <p><strong>Recommended System Changes:</strong></p>
+                    <p>• Implement patient satisfaction surveys to identify early warning signs</p>
+                    <p>• Create standardized onboarding process to set proper expectations</p>
+                    <p>• Develop patient communication protocols for discharge discussions</p>
+                    <p>• Establish regular check-ins with patients showing engagement concerns</p>
+                    <p><strong>Target:</strong> Reduce overall discharge rate to <12% within 6 months</p>
+                `
+            });
+            
+            return recommendations;
         }
 
         // Update practitioners table with sorting functionality
