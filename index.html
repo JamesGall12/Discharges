@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Greencare Discharge Analytics - June 2025</title>
+    <title>Greencare Discharge Analysis - June 2025</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         * {
@@ -169,10 +169,10 @@
             box-shadow: 0 8px 25px rgba(0,0,0,0.3);
             overflow: hidden;
             border: 1px solid #475569;
+            margin-bottom: 30px;
         }
         
         .table-header {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             padding: 30px;
             color: white;
         }
@@ -180,10 +180,11 @@
         .table-header h2 {
             font-size: 1.6rem;
             margin-bottom: 8px;
+            text-align: center;
         }
         
         .table-header p {
-            color: #fecaca;
+            text-align: center;
         }
         
         table {
@@ -372,6 +373,7 @@
         .update-info h3 {
             color: #f1f5f9;
             margin-bottom: 10px;
+            text-align: center;
         }
         
         .update-info p {
@@ -421,10 +423,10 @@
                 <div id="alertContent"></div>
             </div>
             
-            <div class="practitioners-table" style="margin-bottom: 30px;">
+            <div class="practitioners-table">
                 <div class="table-header" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">
-                    <h2 style="text-align: center;">📋 Quick Summary</h2>
-                    <p style="text-align: center;">Key performance metrics at a glance</p>
+                    <h2>📋 Quick Summary</h2>
+                    <p>Key performance metrics at a glance</p>
                 </div>
                 <div style="padding: 20px;">
                     <div id="quickSummaryContent">
@@ -468,13 +470,6 @@
                 </div>
                 
                 <div class="metric-card">
-                    <div class="metric-title">Highest Risk Practitioner</div>
-                    <div class="metric-value" id="highestRiskName">-</div>
-                    <div class="metric-subtitle" id="highestRiskRate">Patient discharge rate</div>
-                    <div class="risk-indicator risk-high" id="highestRiskIndicator">Critical</div>
-                </div>
-                
-                <div class="metric-card">
                     <div class="metric-title">Best Performer</div>
                     <div class="metric-value" id="bestPerformerName">-</div>
                     <div class="metric-subtitle" id="bestPerformerRate">Lowest overall rate</div>
@@ -500,8 +495,8 @@
             
             <div class="practitioners-table">
                 <div class="table-header" style="background: linear-gradient(135deg, #475569 0%, #374151 100%);">
-                    <h2 style="text-align: center;">Detailed Practitioner Analysis</h2>
-                    <p style="text-align: center;">Individual discharge rates and risk assessment</p>
+                    <h2>Detailed Practitioner Analysis</h2>
+                    <p>Individual discharge rates and risk assessment</p>
                 </div>
                 <table>
                     <thead>
@@ -524,8 +519,8 @@
             
             <div id="insightsSection" class="practitioners-table">
                 <div class="table-header" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">
-                    <h2 style="text-align: center;">💡 Statistical Insights & Analysis</h2>
-                    <p style="text-align: center;">Data-driven insights accounting for consultation volume and statistical significance</p>
+                    <h2>💡 Statistical Insights & Analysis</h2>
+                    <p>Data-driven insights accounting for consultation volume and statistical significance</p>
                 </div>
                 <div style="padding: 30px;">
                     <div id="insightsContent">
@@ -536,8 +531,8 @@
             
             <div id="recommendationsSection" class="practitioners-table">
                 <div class="table-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                    <h2 style="text-align: center;">🎯 Strategic Recommendations</h2>
-                    <p style="text-align: center;">Actionable steps to improve patient retention and operational efficiency</p>
+                    <h2>🎯 Strategic Recommendations</h2>
+                    <p>Actionable steps to improve patient retention and operational efficiency</p>
                 </div>
                 <div style="padding: 30px;">
                     <div id="recommendationsContent">
@@ -547,7 +542,7 @@
             </div>
             
             <div class="update-info">
-                <h3 style="text-align: center;">🔄 Auto-Update System</h3>
+                <h3>🔄 Auto-Update System</h3>
                 <p><strong>How it works:</strong> This dashboard automatically pulls the latest discharge data from your Google Sheets every time the page loads. Data is analyzed to identify high-risk practitioners and discharge patterns.</p>
                 <p><strong>Risk Thresholds:</strong> Patient discharge >15% = High Risk • Practitioner discharge >10% = Review Required • Overall >20% = Critical</p>
             </div>
@@ -601,13 +596,13 @@
                 document.getElementById('dataSource').innerHTML = `
                     ⚠️ <strong>Data Connection Failed</strong><br>
                     Error: ${error.message}<br>
-                    Using demo data for testing. Check console for details.
+                    Using demo data for testing.
                 `;
                 document.getElementById('dataSource').style.background = 'rgba(239, 68, 68, 0.1)';
                 document.getElementById('dataSource').style.borderColor = '#ef4444';
                 document.getElementById('dataSource').style.color = '#fca5a5';
                 
-                // Return demo data with realistic names for medicinal cannabis clinic
+                // Return demo data
                 return [
                     { name: 'Dr. Sarah Mitchell', patientDischarge: 12.5, practitionerDischarge: 8.2, appointments: 142, overallDischarge: 20.7 },
                     { name: 'Dr. James Wilson', patientDischarge: 18.3, practitionerDischarge: 5.1, appointments: 89, overallDischarge: 23.4 },
@@ -626,11 +621,6 @@
             const lines = csvText.trim().split('\n');
             console.log('Total lines found:', lines.length);
             
-            // Show first few lines for debugging
-            for (let i = 0; i < Math.min(5, lines.length); i++) {
-                console.log(`Line ${i}:`, lines[i]);
-            }
-            
             const practitioners = [];
             
             // Process rows 3-18 for data (array indices 2-17)
@@ -648,14 +638,12 @@
                 const appointmentsRaw = columns[13] ? columns[13].trim() : '';
                 const overallDischargeRaw = columns[14] ? columns[14].trim() : '';
                 
-                console.log(`Row ${i+1}: Name="${name}", Patient="${patientDischargeRaw}", Practitioner="${practitionerDischargeRaw}", Appointments="${appointmentsRaw}", Overall="${overallDischargeRaw}"`);
-                
                 const patientDischarge = parseFloat(patientDischargeRaw) || 0;
                 const practitionerDischarge = parseFloat(practitionerDischargeRaw) || 0;
                 const appointments = parseInt(appointmentsRaw) || 0;
                 const overallDischarge = parseFloat(overallDischargeRaw) || 0;
                 
-                // Only include practitioners with meaningful data (appointments > 0 and name exists)
+                // Only include practitioners with meaningful data
                 if (name && name !== '' && !name.toLowerCase().includes('total') && !name.toLowerCase().includes('practitioner name') && appointments > 0) {
                     practitioners.push({
                         name: name,
@@ -665,8 +653,6 @@
                         overallDischarge: overallDischarge
                     });
                     console.log(`Added: ${name} - ${patientDischarge}%/${practitionerDischarge}%/${overallDischarge}% (${appointments} appointments)`);
-                } else {
-                    console.log(`Skipped: ${name} - No meaningful data (appointments: ${appointments})`);
                 }
             }
             
@@ -735,8 +721,7 @@
             const avgPractitionerDischarge = data.reduce((sum, p) => sum + p.practitionerDischarge, 0) / totalPractitioners;
             const avgOverallDischarge = data.reduce((sum, p) => sum + p.overallDischarge, 0) / totalPractitioners;
             
-            // Find highest risk and best performer
-            const highestRisk = data.reduce((max, p) => p.patientDischarge > max.patientDischarge ? p : max, data[0]);
+            // Find best performer
             const bestPerformer = data.reduce((min, p) => p.overallDischarge < min.overallDischarge ? p : min, data[0]);
             
             // Update metric cards
@@ -745,9 +730,6 @@
             document.getElementById('avgPatientDischarge').textContent = `${avgPatientDischarge.toFixed(1)}%`;
             document.getElementById('avgPractitionerDischarge').textContent = `${avgPractitionerDischarge.toFixed(1)}%`;
             document.getElementById('overallDischarge').textContent = `${avgOverallDischarge.toFixed(1)}%`;
-            
-            document.getElementById('highestRiskName').textContent = highestRisk.name;
-            document.getElementById('highestRiskRate').textContent = `${highestRisk.patientDischarge.toFixed(1)}% patient discharge`;
             
             document.getElementById('bestPerformerName').textContent = bestPerformer.name;
             document.getElementById('bestPerformerRate').textContent = `${bestPerformer.overallDischarge.toFixed(1)}% overall discharge`;
@@ -769,11 +751,11 @@
                 ).join('');
             }
             
+            // Update quick summary
+            updateQuickSummary(data, totalAppointments, avgPatientDischarge, avgPractitionerDischarge, avgOverallDischarge);
+            
             // Update table
             updatePractitionersTable(data);
-            
-            // Generate and update quick summary
-            updateQuickSummary(data, totalAppointments, avgPatientDischarge, avgPractitionerDischarge, avgOverallDischarge);
             
             // Generate and update insights
             const insights = generateInsights(data);
@@ -786,7 +768,7 @@
             // Update charts
             createDischargeCharts(data);
         }
-        
+
         // Update quick summary section
         function updateQuickSummary(data, totalAppointments, avgPatientDischarge, avgPractitionerDischarge, avgOverallDischarge) {
             const highRiskCount = data.filter(p => p.overallDischarge > 20).length;
@@ -814,142 +796,18 @@
                 </div>
             `;
         }
-        }
-
-        // Update insights section
-        function updateInsightsSection(insights) {
-            const content = document.getElementById('insightsContent');
-            content.innerHTML = `
-                <div class="insight-grid">
-                    ${insights.map(insight => `
-                        <div class="insight-card">
-                            <h4>${insight.title}</h4>
-                            ${insight.content}
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-        
-        // Update recommendations section
-        function updateRecommendationsSection(recommendations) {
-            const content = document.getElementById('recommendationsContent');
-            content.innerHTML = `
-                <div class="insight-grid">
-                    ${recommendations.map(rec => `
-                        <div class="insight-card">
-                            <h4>${rec.title}</h4>
-                            ${rec.content}
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-        
-        // Generate strategic recommendations based on data analysis
-        function generateRecommendations(data) {
-            const recommendations = [];
-            
-            // Immediate Actions
-            const criticalPractitioners = data.filter(p => p.overallDischarge > 20 && p.workloadShare > 10);
-            if (criticalPractitioners.length > 0) {
-                recommendations.push({
-                    title: "🚨 Immediate Actions Required",
-                    content: `
-                        <p><strong>Priority 1 - Urgent Reviews:</strong></p>
-                        ${criticalPractitioners.map(p => 
-                            `<p>• Schedule immediate 1-on-1 with <strong>${p.name}</strong> (${p.overallDischarge.toFixed(1)}% discharge rate, ${p.workloadShare.toFixed(1)}% workload)</p>`
-                        ).join('')}
-                        <p><strong>Actions:</strong> Identify specific discharge reasons, provide additional support, consider workload adjustment.</p>
-                    `
-                });
-            }
-            
-            // Workload Redistribution
-            const overloaded = data.filter(p => p.workloadShare > 20);
-            const underutilized = data.filter(p => p.workloadShare < 8 && p.overallDischarge < 15);
-            
-            if (overloaded.length > 0 && underutilized.length > 0) {
-                recommendations.push({
-                    title: "⚖️ Workload Redistribution Strategy",
-                    content: `
-                        <p><strong>Overloaded Practitioners (>20% workload):</strong></p>
-                        ${overloaded.map(p => `<p>• ${p.name}: ${p.workloadShare.toFixed(1)}% workload, ${p.overallDischarge.toFixed(1)}% discharge</p>`).join('')}
-                        <p><strong>Available Capacity:</strong></p>
-                        ${underutilized.map(p => `<p>• ${p.name}: ${p.workloadShare.toFixed(1)}% workload, ${p.overallDischarge.toFixed(1)}% discharge</p>`).join('')}
-                        <p><strong>Recommendation:</strong> Gradually redistribute 5-10% of consultations from overloaded to underutilized practitioners.</p>
-                    `
-                });
-            }
-            
-            // Training and Development
-            const highDischargeButGoodVolume = data.filter(p => p.overallDischarge > 15 && p.appointments > 50);
-            if (highDischargeButGoodVolume.length > 0) {
-                recommendations.push({
-                    title: "📚 Training & Development Focus",
-                    content: `
-                        <p><strong>Practitioners with high discharge rates but good patient volume:</strong></p>
-                        ${highDischargeButGoodVolume.map(p => 
-                            `<p>• ${p.name}: ${p.overallDischarge.toFixed(1)}% discharge rate (${p.appointments} appointments)</p>`
-                        ).join('')}
-                        <p><strong>Recommended Training Areas:</strong></p>
-                        <p>• Patient communication and engagement techniques</p>
-                        <p>• Expectation management and treatment planning</p>
-                        <p>• Stress management and burnout prevention</p>
-                        <p>• Best practices sharing from top performers</p>
-                    `
-                });
-            }
-            
-            // Best Practice Sharing
-            const topPerformers = data.filter(p => p.overallDischarge < 12 && p.appointments > 80).sort((a, b) => a.overallDischarge - b.overallDischarge);
-            if (topPerformers.length > 0) {
-                recommendations.push({
-                    title: "🌟 Best Practice Implementation",
-                    content: `
-                        <p><strong>Top Performing Practitioners:</strong></p>
-                        ${topPerformers.slice(0, 3).map(p => 
-                            `<p>• ${p.name}: ${p.overallDischarge.toFixed(1)}% discharge rate with ${p.appointments} appointments (${p.workloadShare.toFixed(1)}% workload)</p>`
-                        ).join('')}
-                        <p><strong>Actions:</strong></p>
-                        <p>• Conduct interviews to identify successful practices</p>
-                        <p>• Create mentorship pairings with struggling practitioners</p>
-                        <p>• Document and share successful patient engagement strategies</p>
-                        <p>• Consider peer-to-peer training sessions</p>
-                    `
-                });
-            }
-            
-            // System Improvements
-            const totalDischargeRate = data.reduce((sum, p) => sum + p.overallDischarge, 0) / data.length;
-            recommendations.push({
-                title: "🔧 System & Process Improvements",
-                content: `
-                    <p><strong>Current Average Discharge Rate:</strong> ${totalDischargeRate.toFixed(1)}%</p>
-                    <p><strong>Recommended System Changes:</strong></p>
-                    <p>• Implement patient satisfaction surveys to identify early warning signs</p>
-                    <p>• Create standardized onboarding process to set proper expectations</p>
-                    <p>• Develop patient communication protocols for discharge discussions</p>
-                    <p>• Establish regular check-ins with patients showing engagement concerns</p>
-                    <p><strong>Target:</strong> Reduce overall discharge rate to <12% within 6 months</p>
-                `
-            });
-            
-            return recommendations;
-        }
 
         // Update practitioners table with sorting functionality
         function updatePractitionersTable(data) {
-            practitionersData = data; // Store for sorting
+            practitionersData = data;
             const tbody = document.getElementById('practitionersTable');
             tbody.innerHTML = '';
             
-            // Sort data based on current sort settings
+            // Sort data
             const sortedData = [...data].sort((a, b) => {
                 let aVal = a[currentSortColumn];
                 let bVal = b[currentSortColumn];
                 
-                // Handle different data types
                 if (currentSortColumn === 'name') {
                     aVal = aVal.toLowerCase();
                     bVal = bVal.toLowerCase();
@@ -966,7 +824,7 @@
                 }
             });
             
-            // Update table headers to show sort direction
+            // Update table headers
             document.querySelectorAll('th.sortable').forEach(th => {
                 th.classList.remove('sort-asc', 'sort-desc');
                 if (th.dataset.column === currentSortColumn) {
@@ -1025,14 +883,14 @@
             }
             updatePractitionersTable(practitionersData);
         }
-        
+
         // Generate statistical insights
         function generateInsights(data) {
             const insights = [];
             
             // Workload vs Discharge Analysis
-            const highWorkload = data.filter(p => p.workloadShare >= 15); // Handling 15%+ of total consultations
-            const lowWorkload = data.filter(p => p.workloadShare < 10); // Handling <10% of consultations
+            const highWorkload = data.filter(p => p.workloadShare >= 15);
+            const lowWorkload = data.filter(p => p.workloadShare < 10);
             
             if (highWorkload.length > 0 && lowWorkload.length > 0) {
                 const highWorkloadAvgDischarge = highWorkload.reduce((sum, p) => sum + p.overallDischarge, 0) / highWorkload.length;
@@ -1048,117 +906,69 @@
                 });
             }
             
-            // Workload Distribution Analysis
-            const workloadDistribution = data.map(p => ({
-                name: p.name,
-                workloadShare: p.workloadShare,
-                overallDischarge: p.overallDischarge,
-                efficiency: p.workloadShare / p.overallDischarge // Higher is better
-            })).sort((a, b) => b.efficiency - a.efficiency);
-            
-            const mostEfficient = workloadDistribution[0];
-            const leastEfficient = workloadDistribution[workloadDistribution.length - 1];
-            
-            insights.push({
-                title: "📊 Workload Efficiency Analysis",
-                content: `
-                    <p><strong>Most Efficient:</strong> <span class="highlight-stat">${mostEfficient.name}</span> handles <span class="highlight-stat">${mostEfficient.workloadShare.toFixed(1)}%</span> of consultations with only <span class="highlight-stat">${mostEfficient.overallDischarge.toFixed(1)}%</span> discharge rate</p>
-                    <p><strong>Needs Support:</strong> <span class="highlight-stat">${leastEfficient.name}</span> handles <span class="highlight-stat">${leastEfficient.workloadShare.toFixed(1)}%</span> of consultations but has <span class="highlight-stat">${leastEfficient.overallDischarge.toFixed(1)}%</span> discharge rate</p>
-                    <p><strong>Recommendation:</strong> Consider redistributing workload or providing additional support to practitioners with high discharge rates relative to their consultation volume.</p>
-                `
-            });
-            
-            // High volume vs discharge rate analysis
-            const highVolume = data.filter(p => p.appointments >= 100);
-            const lowVolume = data.filter(p => p.appointments < 50);
-            
-            if (highVolume.length > 0 && lowVolume.length > 0) {
-                const highVolumeAvgDischarge = highVolume.reduce((sum, p) => sum + p.overallDischarge, 0) / highVolume.length;
-                const lowVolumeAvgDischarge = lowVolume.reduce((sum, p) => sum + p.overallDischarge, 0) / lowVolume.length;
-                
-                insights.push({
-                    title: "📈 Volume vs Discharge Rate Analysis",
-                    content: `
-                        <p>Practitioners with <span class="highlight-stat">≥100 appointments</span> have an average overall discharge rate of <span class="highlight-stat">${highVolumeAvgDischarge.toFixed(1)}%</span></p>
-                        <p>Practitioners with <span class="highlight-stat">&lt;50 appointments</span> have an average overall discharge rate of <span class="highlight-stat">${lowVolumeAvgDischarge.toFixed(1)}%</span></p>
-                        <p>Difference: <span class="${highVolumeAvgDischarge > lowVolumeAvgDischarge ? 'correlation-negative' : 'correlation-positive'}">${Math.abs(highVolumeAvgDischarge - lowVolumeAvgDischarge).toFixed(1)} percentage points</span></p>
-                    `
-                });
-            }
-            
-            // Statistical significance analysis
-            const totalConsultations = data.reduce((sum, p) => sum + p.appointments, 0);
-            const highestVolume = data.reduce((max, p) => p.appointments > max.appointments ? p : max, data[0]);
-            const mostProblematic = data.reduce((max, p) => p.overallDischarge > max.overallDischarge ? p : max, data[0]);
-            
-            insights.push({
-                title: "🎯 Key Performance Indicators",
-                content: `
-                    <p><strong>Highest Volume:</strong> <span class="highlight-stat">${highestVolume.name}</span> handles <span class="highlight-stat">${highestVolume.workloadShare.toFixed(1)}%</span> of all consultations (${highestVolume.appointments} appointments) with <span class="highlight-stat">${highestVolume.overallDischarge.toFixed(1)}%</span> discharge rate</p>
-                    <p><strong>Highest Risk:</strong> <span class="highlight-stat">${mostProblematic.name}</span> has <span class="highlight-stat">${mostProblematic.overallDischarge.toFixed(1)}%</span> discharge rate while handling <span class="highlight-stat">${mostProblematic.workloadShare.toFixed(1)}%</span> of consultations</p>
-                    <p><strong>Total Consultations:</strong> <span class="highlight-stat">${totalConsultations.toLocaleString()}</span> across all practitioners</p>
-                `
-            });
-            
-            // Priority actions with workload consideration
-            const criticalHighWorkload = data.filter(p => p.overallDischarge > 20 && p.workloadShare > 10);
-            if (criticalHighWorkload.length > 0) {
-                insights.push({
-                    title: "🚨 Priority Action Items",
-                    content: `
-                        <p><strong>Critical - High Impact Opportunities:</strong></p>
-                        ${criticalHighWorkload.map(p => 
-                            `<p>• <span class="highlight-stat">${p.name}</span>: ${p.overallDischarge.toFixed(1)}% discharge rate while handling ${p.workloadShare.toFixed(1)}% of all consultations (${p.appointments} appointments)</p>`
-                        ).join('')}
-                        <p>These practitioners handle significant patient volumes but have high discharge rates, representing the highest impact improvement opportunities for patient retention.</p>
-                    `
-                });
-            }
-            
             return insights;
         }
-        
-        // Calculate correlation between risk and volume
-        function calculateRiskVolumeCorrelation(data) {
-            const validData = data.filter(p => p.appointments >= 30); // Only statistically significant data
+
+        // Generate strategic recommendations
+        function generateRecommendations(data) {
+            const recommendations = [];
             
-            if (validData.length < 3) {
-                return {
-                    interpretation: "Insufficient data for correlation analysis. Need more practitioners with ≥30 appointments."
-                };
+            const criticalPractitioners = data.filter(p => p.overallDischarge > 20 && p.workloadShare > 10);
+            if (criticalPractitioners.length > 0) {
+                recommendations.push({
+                    title: "🚨 Immediate Actions Required",
+                    content: `
+                        <p><strong>Priority 1 - Urgent Reviews:</strong></p>
+                        ${criticalPractitioners.map(p => 
+                            `<p>• Schedule immediate 1-on-1 with <strong>${p.name}</strong> (${p.overallDischarge.toFixed(1)}% discharge rate, ${p.workloadShare.toFixed(1)}% workload)</p>`
+                        ).join('')}
+                        <p><strong>Actions:</strong> Identify specific discharge reasons, provide additional support, consider workload adjustment.</p>
+                    `
+                });
             }
             
-            const highVolumeHighRisk = validData.filter(p => p.appointments > 100 && p.overallDischarge > 15).length;
-            const lowVolumeHighRisk = validData.filter(p => p.appointments <= 100 && p.overallDischarge > 15).length;
-            
-            if (highVolumeHighRisk > lowVolumeHighRisk) {
-                return {
-                    interpretation: `<span class="correlation-negative">Concerning pattern detected:</span> Higher-volume practitioners show increased discharge rates. This suggests potential burnout or capacity issues affecting patient retention.`
-                };
-            } else if (lowVolumeHighRisk > highVolumeHighRisk) {
-                return {
-                    interpretation: `<span class="correlation-positive">Positive trend observed:</span> Higher-volume practitioners maintain better discharge rates, indicating experience benefits patient retention.`
-                };
-            } else {
-                return {
-                    interpretation: `<span class="correlation-neutral">Neutral correlation:</span> No clear relationship between consultation volume and discharge rates. Individual practitioner factors likely more significant.`
-                };
-            }
+            return recommendations;
+        }
+
+        // Update sections
+        function updateInsightsSection(insights) {
+            const content = document.getElementById('insightsContent');
+            content.innerHTML = `
+                <div class="insight-grid">
+                    ${insights.map(insight => `
+                        <div class="insight-card">
+                            <h4>${insight.title}</h4>
+                            ${insight.content}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function updateRecommendationsSection(recommendations) {
+            const content = document.getElementById('recommendationsContent');
+            content.innerHTML = `
+                <div class="insight-grid">
+                    ${recommendations.map(rec => `
+                        <div class="insight-card">
+                            <h4>${rec.title}</h4>
+                            ${rec.content}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
         }
 
         // Create discharge charts
         function createDischargeCharts(data) {
             if (typeof Chart === 'undefined') {
-                console.log('Chart.js not loaded yet, retrying...');
                 setTimeout(() => createDischargeCharts(data), 500);
                 return;
             }
 
-            // Destroy existing charts
             if (charts.discharge) charts.discharge.destroy();
             if (charts.distribution) charts.distribution.destroy();
 
-            // Discharge rates chart
             try {
                 const ctx1 = document.getElementById('dischargeChart');
                 charts.discharge = new Chart(ctx1.getContext('2d'), {
@@ -1203,12 +1013,7 @@
                         }
                     }
                 });
-            } catch (error) {
-                console.error('Error creating discharge chart:', error);
-            }
 
-            // Distribution chart
-            try {
                 const totalPatientDischarges = data.reduce((sum, p) => sum + p.patientDischarge, 0);
                 const totalPractitionerDischarges = data.reduce((sum, p) => sum + p.practitionerDischarge, 0);
 
@@ -1239,7 +1044,7 @@
                     }
                 });
             } catch (error) {
-                console.error('Error creating distribution chart:', error);
+                console.error('Error creating charts:', error);
             }
         }
 
@@ -1253,26 +1058,18 @@
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
                 
-                console.log('Discharge dashboard loaded successfully!');
+                console.log('Dashboard loaded successfully!');
             } catch (error) {
                 console.error('Error initializing dashboard:', error);
                 
-                // Use fallback data
                 const fallbackData = [
                     { name: 'Dr. Sarah Mitchell', patientDischarge: 12.5, practitionerDischarge: 8.2, appointments: 142, overallDischarge: 20.7 },
                     { name: 'Dr. James Wilson', patientDischarge: 18.3, practitionerDischarge: 5.1, appointments: 89, overallDischarge: 23.4 },
-                    { name: 'Dr. Emily Chen', patientDischarge: 9.7, practitionerDischarge: 12.8, appointments: 203, overallDischarge: 22.5 },
-                    { name: 'Dr. Michael Brown', patientDischarge: 15.2, practitionerDischarge: 7.3, appointments: 156, overallDischarge: 22.5 },
-                    { name: 'Dr. Lisa Davis', patientDischarge: 6.8, practitionerDischarge: 4.2, appointments: 178, overallDischarge: 11.0 },
-                    { name: 'Dr. Robert Taylor', patientDischarge: 21.1, practitionerDischarge: 3.9, appointments: 67, overallDischarge: 25.0 },
-                    { name: 'Dr. Amanda White', patientDischarge: 4.2, practitionerDischarge: 6.1, appointments: 134, overallDischarge: 10.3 }
+                    { name: 'Dr. Emily Chen', patientDischarge: 9.7, practitionerDischarge: 12.8, appointments: 203, overallDischarge: 22.5 }
                 ];
                 
                 updateDashboard(fallbackData);
                 document.getElementById('dataSource').innerHTML = '⚠️ Using demo data - Google Sheets connection failed';
-                document.getElementById('dataSource').style.background = 'rgba(245, 158, 11, 0.1)';
-                document.getElementById('dataSource').style.borderColor = '#f59e0b';
-                document.getElementById('dataSource').style.color = '#fbbf24';
                 
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
