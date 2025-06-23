@@ -429,6 +429,12 @@
                 </div>
                 
                 <div class="metric-card">
+                    <div class="metric-title">Total Consultations</div>
+                    <div class="metric-value" id="totalConsultations">0</div>
+                    <div class="metric-subtitle">Combined consultation volume</div>
+                </div>
+                
+                <div class="metric-card">
                     <div class="metric-title">Avg Patient Discharge Rate</div>
                     <div class="metric-value" id="avgPatientDischarge">0%</div>
                     <div class="metric-subtitle">Patient-initiated discharges</div>
@@ -490,6 +496,7 @@
                         <tr>
                             <th class="sortable" data-column="name">Practitioner</th>
                             <th class="sortable" data-column="appointments">Appointments</th>
+                            <th class="sortable" data-column="workloadShare">% of Total Consults</th>
                             <th class="sortable" data-column="patientDischarge">Patient Discharge %</th>
                             <th class="sortable" data-column="practitionerDischarge">Practitioner Discharge %</th>
                             <th class="sortable" data-column="overallDischarge">Overall Discharge %</th>
@@ -687,6 +694,14 @@
 
         // Update dashboard with discharge data
         function updateDashboard(data) {
+            // Calculate total appointments for workload analysis
+            const totalAppointments = data.reduce((sum, p) => sum + p.appointments, 0);
+            
+            // Add workload share to each practitioner
+            data.forEach(practitioner => {
+                practitioner.workloadShare = (practitioner.appointments / totalAppointments) * 100;
+            });
+            
             // Update last updated time
             document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
             
@@ -702,6 +717,7 @@
             
             // Update metric cards
             document.getElementById('totalPractitioners').textContent = totalPractitioners;
+            document.getElementById('totalConsultations').textContent = totalAppointments.toLocaleString();
             document.getElementById('avgPatientDischarge').textContent = `${avgPatientDischarge.toFixed(1)}%`;
             document.getElementById('avgPractitionerDischarge').textContent = `${avgPractitionerDischarge.toFixed(1)}%`;
             document.getElementById('overallDischarge').textContent = `${avgOverallDischarge.toFixed(1)}%`;
@@ -816,6 +832,7 @@
                 row.innerHTML = `
                     <td><strong>${practitioner.name}</strong></td>
                     <td><strong>${practitioner.appointments.toLocaleString()}</strong></td>
+                    <td><strong>${practitioner.workloadShare.toFixed(1)}%</strong></td>
                     <td><strong>${practitioner.patientDischarge.toFixed(1)}%</strong></td>
                     <td>${practitioner.practitionerDischarge.toFixed(1)}%</td>
                     <td><strong>${practitioner.overallDischarge.toFixed(1)}%</strong></td>
@@ -846,6 +863,44 @@
         function generateInsights(data) {
             const insights = [];
             
+            // Workload vs Discharge Analysis
+            const highWorkload = data.filter(p => p.workloadShare >= 15); // Handling 15%+ of total consultations
+            const lowWorkload = data.filter(p => p.workloadShare < 10); // Handling <10% of consultations
+            
+            if (highWorkload.length > 0 && lowWorkload.length > 0) {
+                const highWorkloadAvgDischarge = highWorkload.reduce((sum, p) => sum + p.overallDischarge, 0) / highWorkload.length;
+                const lowWorkloadAvgDischarge = lowWorkload.reduce((sum, p) => sum + p.overallDischarge, 0) / lowWorkload.length;
+                
+                insights.push({
+                    title: "⚖️ Workload vs Discharge Rate Analysis",
+                    content: `
+                        <p>Practitioners handling <span class="highlight-stat">≥15% of total consultations</span> have an average discharge rate of <span class="highlight-stat">${highWorkloadAvgDischarge.toFixed(1)}%</span></p>
+                        <p>Practitioners handling <span class="highlight-stat">&lt;10% of consultations</span> have an average discharge rate of <span class="highlight-stat">${lowWorkloadAvgDischarge.toFixed(1)}%</span></p>
+                        <p>Impact: <span class="${highWorkloadAvgDischarge > lowWorkloadAvgDischarge ? 'correlation-negative' : 'correlation-positive'}">${highWorkloadAvgDischarge > lowWorkloadAvgDischarge ? 'High workload may be contributing to patient loss' : 'High workload practitioners maintain better retention'}</span></p>
+                    `
+                });
+            }
+            
+            // Workload Distribution Analysis
+            const workloadDistribution = data.map(p => ({
+                name: p.name,
+                workloadShare: p.workloadShare,
+                overallDischarge: p.overallDischarge,
+                efficiency: p.workloadShare / p.overallDischarge // Higher is better
+            })).sort((a, b) => b.efficiency - a.efficiency);
+            
+            const mostEfficient = workloadDistribution[0];
+            const leastEfficient = workloadDistribution[workloadDistribution.length - 1];
+            
+            insights.push({
+                title: "📊 Workload Efficiency Analysis",
+                content: `
+                    <p><strong>Most Efficient:</strong> <span class="highlight-stat">${mostEfficient.name}</span> handles <span class="highlight-stat">${mostEfficient.workloadShare.toFixed(1)}%</span> of consultations with only <span class="highlight-stat">${mostEfficient.overallDischarge.toFixed(1)}%</span> discharge rate</p>
+                    <p><strong>Needs Support:</strong> <span class="highlight-stat">${leastEfficient.name}</span> handles <span class="highlight-stat">${leastEfficient.workloadShare.toFixed(1)}%</span> of consultations but has <span class="highlight-stat">${leastEfficient.overallDischarge.toFixed(1)}%</span> discharge rate</p>
+                    <p><strong>Recommendation:</strong> Consider redistributing workload or providing additional support to practitioners with high discharge rates relative to their consultation volume.</p>
+                `
+            });
+            
             // High volume vs discharge rate analysis
             const highVolume = data.filter(p => p.appointments >= 100);
             const lowVolume = data.filter(p => p.appointments < 50);
@@ -855,7 +910,7 @@
                 const lowVolumeAvgDischarge = lowVolume.reduce((sum, p) => sum + p.overallDischarge, 0) / lowVolume.length;
                 
                 insights.push({
-                    title: "📊 Volume vs Discharge Rate Analysis",
+                    title: "📈 Volume vs Discharge Rate Analysis",
                     content: `
                         <p>Practitioners with <span class="highlight-stat">≥100 appointments</span> have an average overall discharge rate of <span class="highlight-stat">${highVolumeAvgDischarge.toFixed(1)}%</span></p>
                         <p>Practitioners with <span class="highlight-stat">&lt;50 appointments</span> have an average overall discharge rate of <span class="highlight-stat">${lowVolumeAvgDischarge.toFixed(1)}%</span></p>
@@ -865,41 +920,30 @@
             }
             
             // Statistical significance analysis
-            const totalAppointments = data.reduce((sum, p) => sum + p.appointments, 0);
+            const totalConsultations = data.reduce((sum, p) => sum + p.appointments, 0);
             const highestVolume = data.reduce((max, p) => p.appointments > max.appointments ? p : max, data[0]);
             const mostProblematic = data.reduce((max, p) => p.overallDischarge > max.overallDischarge ? p : max, data[0]);
             
             insights.push({
                 title: "🎯 Key Performance Indicators",
                 content: `
-                    <p><strong>Highest Volume:</strong> <span class="highlight-stat">${highestVolume.name}</span> with <span class="highlight-stat">${highestVolume.appointments} appointments</span> (${highestVolume.overallDischarge.toFixed(1)}% discharge rate)</p>
-                    <p><strong>Highest Risk:</strong> <span class="highlight-stat">${mostProblematic.name}</span> with <span class="highlight-stat">${mostProblematic.overallDischarge.toFixed(1)}% discharge rate</span> (${mostProblematic.appointments} appointments)</p>
-                    <p><strong>Total Consultations:</strong> <span class="highlight-stat">${totalAppointments.toLocaleString()}</span> across all practitioners</p>
+                    <p><strong>Highest Volume:</strong> <span class="highlight-stat">${highestVolume.name}</span> handles <span class="highlight-stat">${highestVolume.workloadShare.toFixed(1)}%</span> of all consultations (${highestVolume.appointments} appointments) with <span class="highlight-stat">${highestVolume.overallDischarge.toFixed(1)}%</span> discharge rate</p>
+                    <p><strong>Highest Risk:</strong> <span class="highlight-stat">${mostProblematic.name}</span> has <span class="highlight-stat">${mostProblematic.overallDischarge.toFixed(1)}%</span> discharge rate while handling <span class="highlight-stat">${mostProblematic.workloadShare.toFixed(1)}%</span> of consultations</p>
+                    <p><strong>Total Consultations:</strong> <span class="highlight-stat">${totalConsultations.toLocaleString()}</span> across all practitioners</p>
                 `
             });
             
-            // Risk vs Volume correlation
-            const riskVolumeCorrelation = calculateRiskVolumeCorrelation(data);
-            insights.push({
-                title: "📈 Risk-Volume Correlation Analysis",
-                content: `
-                    <p>${riskVolumeCorrelation.interpretation}</p>
-                    <p><strong>Statistical Reliability:</strong> Data from practitioners with <span class="highlight-stat">&lt;30 appointments</span> should be interpreted with caution due to small sample size.</p>
-                    <p><strong>Recommendation:</strong> Focus immediate attention on practitioners with both high discharge rates AND high appointment volumes for maximum impact.</p>
-                `
-            });
-            
-            // Priority actions
-            const criticalHighVolume = data.filter(p => p.overallDischarge > 20 && p.appointments > 80);
-            if (criticalHighVolume.length > 0) {
+            // Priority actions with workload consideration
+            const criticalHighWorkload = data.filter(p => p.overallDischarge > 20 && p.workloadShare > 10);
+            if (criticalHighWorkload.length > 0) {
                 insights.push({
                     title: "🚨 Priority Action Items",
                     content: `
-                        <p><strong>Immediate Review Required:</strong></p>
-                        ${criticalHighVolume.map(p => 
-                            `<p>• <span class="highlight-stat">${p.name}</span>: ${p.overallDischarge.toFixed(1)}% discharge rate with ${p.appointments} appointments</p>`
+                        <p><strong>Critical - High Impact Opportunities:</strong></p>
+                        ${criticalHighWorkload.map(p => 
+                            `<p>• <span class="highlight-stat">${p.name}</span>: ${p.overallDischarge.toFixed(1)}% discharge rate while handling ${p.workloadShare.toFixed(1)}% of all consultations (${p.appointments} appointments)</p>`
                         ).join('')}
-                        <p>These practitioners have both high discharge rates and significant patient volumes, representing the highest impact improvement opportunities.</p>
+                        <p>These practitioners handle significant patient volumes but have high discharge rates, representing the highest impact improvement opportunities for patient retention.</p>
                     `
                 });
             }
