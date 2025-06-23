@@ -420,21 +420,21 @@
                 <div class="metric-card">
                     <div class="metric-title">Avg Patient Discharge Rate</div>
                     <div class="metric-value" id="avgPatientDischarge">0%</div>
-                    <div class="metric-subtitle">Patient-initiated discharges</div>
+                    <div class="metric-subtitle">Patient-initiated discharges (from J20)</div>
                     <div class="risk-indicator" id="patientRiskIndicator"></div>
                 </div>
                 
                 <div class="metric-card">
                     <div class="metric-title">Avg Practitioner Discharge Rate</div>
                     <div class="metric-value" id="avgPractitionerDischarge">0%</div>
-                    <div class="metric-subtitle">Practitioner-initiated discharges</div>
+                    <div class="metric-subtitle">Practitioner-initiated discharges (from L20)</div>
                     <div class="risk-indicator" id="practitionerRiskIndicator"></div>
                 </div>
                 
                 <div class="metric-card">
                     <div class="metric-title">Overall Discharge Rate</div>
                     <div class="metric-value" id="overallDischarge">0%</div>
-                    <div class="metric-subtitle">Combined discharge rate</div>
+                    <div class="metric-subtitle">Combined discharge rate (from O20)</div>
                     <div class="risk-indicator" id="overallRiskIndicator"></div>
                 </div>
                 
@@ -512,7 +512,7 @@
             
             <div class="update-info">
                 <h3>🔄 Auto-Update System</h3>
-                <p><strong>How it works:</strong> This dashboard automatically pulls the latest discharge data from your Google Sheets every time the page loads. Data is analyzed to identify high-risk practitioners and discharge patterns.</p>
+                <p><strong>How it works:</strong> This dashboard automatically pulls the latest discharge data from your Google Sheets every time the page loads. Average rates are pulled directly from cells J20, L20, and O20.</p>
                 <p><strong>Risk Thresholds:</strong> Patient discharge >15% = High Risk • Practitioner discharge >10% = Review Required • Overall >20% = Critical</p>
             </div>
         </div>
@@ -571,8 +571,8 @@
                 document.getElementById('dataSource').style.borderColor = '#ef4444';
                 document.getElementById('dataSource').style.color = '#fca5a5';
                 
-                // Return demo data
-                return [
+                // Return demo data with calculated averages
+                const demoData = [
                     { name: 'Dr. Sarah Mitchell', patientDischarge: 12.5, practitionerDischarge: 8.2, appointments: 142, overallDischarge: 20.7 },
                     { name: 'Dr. James Wilson', patientDischarge: 18.3, practitionerDischarge: 5.1, appointments: 89, overallDischarge: 23.4 },
                     { name: 'Dr. Emily Chen', patientDischarge: 9.7, practitionerDischarge: 12.8, appointments: 203, overallDischarge: 22.5 },
@@ -581,6 +581,20 @@
                     { name: 'Dr. Robert Taylor', patientDischarge: 21.1, practitionerDischarge: 3.9, appointments: 67, overallDischarge: 25.0 },
                     { name: 'Dr. Amanda White', patientDischarge: 4.2, practitionerDischarge: 6.1, appointments: 134, overallDischarge: 10.3 }
                 ];
+                
+                // Calculate demo averages
+                const avgPatientDischarge = demoData.reduce((sum, p) => sum + p.patientDischarge, 0) / demoData.length;
+                const avgPractitionerDischarge = demoData.reduce((sum, p) => sum + p.practitionerDischarge, 0) / demoData.length;
+                const avgOverallDischarge = demoData.reduce((sum, p) => sum + p.overallDischarge, 0) / demoData.length;
+                
+                return {
+                    practitioners: demoData,
+                    averages: {
+                        patientDischarge: avgPatientDischarge,
+                        practitionerDischarge: avgPractitionerDischarge,
+                        overallDischarge: avgOverallDischarge
+                    }
+                };
             }
         }
 
@@ -591,8 +605,9 @@
             console.log('Total lines found:', lines.length);
             
             const practitioners = [];
+            let averages = null;
             
-            // Process rows 3-18 for data (array indices 2-17)
+            // Process rows 3-18 for practitioner data (array indices 2-17)
             for (let i = 2; i < Math.min(18, lines.length); i++) {
                 const line = lines[i];
                 if (!line || line.trim() === '') continue;
@@ -625,8 +640,26 @@
                 }
             }
             
+            // Extract averages from row 20 (array index 19) - cells J20, L20, O20
+            if (lines.length > 19) {
+                const averageLine = lines[19];
+                const averageColumns = parseCSVLine(averageLine);
+                
+                const avgPatientDischarge = parseFloat(averageColumns[9]) || 0; // J20
+                const avgPractitionerDischarge = parseFloat(averageColumns[11]) || 0; // L20
+                const avgOverallDischarge = parseFloat(averageColumns[14]) || 0; // O20
+                
+                averages = {
+                    patientDischarge: avgPatientDischarge,
+                    practitionerDischarge: avgPractitionerDischarge,
+                    overallDischarge: avgOverallDischarge
+                };
+                
+                console.log(`Extracted averages from row 20: Patient ${avgPatientDischarge}%, Practitioner ${avgPractitionerDischarge}%, Overall ${avgOverallDischarge}%`);
+            }
+            
             console.log('Final practitioners:', practitioners);
-            return practitioners;
+            return { practitioners, averages };
         }
 
         // Parse a single CSV line handling quoted fields
@@ -672,7 +705,10 @@
         }
 
         // Update dashboard with discharge data
-        function updateDashboard(data) {
+        function updateDashboard(dataObject) {
+            const data = dataObject.practitioners;
+            const averages = dataObject.averages;
+            
             // Calculate total appointments for workload analysis
             const totalAppointments = data.reduce((sum, p) => sum + p.appointments, 0);
             
@@ -684,11 +720,25 @@
             // Update last updated time
             document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
             
-            // Calculate metrics
+            // Use averages from spreadsheet (cells J20, L20, O20) or calculate if not available
+            let avgPatientDischarge, avgPractitionerDischarge, avgOverallDischarge;
+            
+            if (averages) {
+                avgPatientDischarge = averages.patientDischarge;
+                avgPractitionerDischarge = averages.practitionerDischarge;
+                avgOverallDischarge = averages.overallDischarge;
+                console.log('Using spreadsheet averages:', averages);
+            } else {
+                // Fallback to calculated averages
+                const totalPractitioners = data.length;
+                avgPatientDischarge = data.reduce((sum, p) => sum + p.patientDischarge, 0) / totalPractitioners;
+                avgPractitionerDischarge = data.reduce((sum, p) => sum + p.practitionerDischarge, 0) / totalPractitioners;
+                avgOverallDischarge = data.reduce((sum, p) => sum + p.overallDischarge, 0) / totalPractitioners;
+                console.log('Using calculated averages (fallback)');
+            }
+            
+            // Calculate other metrics
             const totalPractitioners = data.length;
-            const avgPatientDischarge = data.reduce((sum, p) => sum + p.patientDischarge, 0) / totalPractitioners;
-            const avgPractitionerDischarge = data.reduce((sum, p) => sum + p.practitionerDischarge, 0) / totalPractitioners;
-            const avgOverallDischarge = data.reduce((sum, p) => sum + p.overallDischarge, 0) / totalPractitioners;
             
             // Find best performer
             const bestPerformer = data.reduce((min, p) => p.overallDischarge < min.overallDischarge ? p : min, data[0]);
@@ -1194,8 +1244,8 @@
         async function initDashboard() {
             try {
                 console.log('Initializing discharge dashboard...');
-                const data = await fetchDischargeData();
-                updateDashboard(data);
+                const dataObject = await fetchDischargeData();
+                updateDashboard(dataObject);
                 
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
@@ -1210,7 +1260,21 @@
                     { name: 'Dr. Emily Chen', patientDischarge: 9.7, practitionerDischarge: 12.8, appointments: 203, overallDischarge: 22.5 }
                 ];
                 
-                updateDashboard(fallbackData);
+                // Calculate fallback averages
+                const avgPatientDischarge = fallbackData.reduce((sum, p) => sum + p.patientDischarge, 0) / fallbackData.length;
+                const avgPractitionerDischarge = fallbackData.reduce((sum, p) => sum + p.practitionerDischarge, 0) / fallbackData.length;
+                const avgOverallDischarge = fallbackData.reduce((sum, p) => sum + p.overallDischarge, 0) / fallbackData.length;
+                
+                const fallbackDataObject = {
+                    practitioners: fallbackData,
+                    averages: {
+                        patientDischarge: avgPatientDischarge,
+                        practitionerDischarge: avgPractitionerDischarge,
+                        overallDischarge: avgOverallDischarge
+                    }
+                };
+                
+                updateDashboard(fallbackDataObject);
                 document.getElementById('dataSource').innerHTML = '⚠️ Using demo data - Google Sheets connection failed';
                 
                 document.getElementById('loading').style.display = 'none';
