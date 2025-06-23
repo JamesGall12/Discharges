@@ -86,14 +86,6 @@
             background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
         }
         
-        .metric-card.warning::before {
-            background: linear-gradient(90deg, #ef4444, #dc2626);
-        }
-        
-        .metric-card.good::before {
-            background: linear-gradient(90deg, #10b981, #059669);
-        }
-        
         .metric-title {
             color: #cbd5e1;
             font-size: 0.9rem;
@@ -318,14 +310,6 @@
             margin-bottom: 0;
         }
         
-        .update-info {
-            background: linear-gradient(145deg, #1e293b 0%, #334155 100%);
-            border-radius: 15px;
-            padding: 20px;
-            margin-top: 30px;
-            border: 1px solid #475569;
-        }
-        
         .insight-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -375,6 +359,14 @@
         .correlation-neutral {
             color: #f59e0b;
             font-weight: 600;
+        }
+        
+        .update-info {
+            background: linear-gradient(145deg, #1e293b 0%, #334155 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+            border: 1px solid #475569;
         }
         
         .update-info h3 {
@@ -747,7 +739,7 @@
             // Update charts
             createDischargeCharts(data);
         }
-        
+
         // Update insights section
         function updateInsightsSection(insights) {
             const content = document.getElementById('insightsContent');
@@ -761,7 +753,6 @@
                     `).join('')}
                 </div>
             `;
-        }
         }
 
         // Update practitioners table with sorting functionality
