@@ -444,7 +444,7 @@
     </div>
 
     <script>
-        // Google Sheets CSV URL for discharge data
+        // Google Sheets CSV URL for discharge data - JUNE SUMMARY - DISCHARGES sheet
         const DISCHARGE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9oDIgQ5APmcCORpmydY4Kxuwd2RPyLEG41QggNecWvPM_xbHBEcp14Pwj9lxkn9OxryuMq5SUFbsd/pub?gid=1648608059&single=true&output=csv';
         
         let charts = {};
@@ -527,11 +527,11 @@
                 // Handle CSV parsing with quoted fields
                 const columns = parseCSVLine(line);
                 
-                // Extract columns H, J, L, N (indices 7, 9, 11, 13)
+                // Extract columns H, J, L, O (indices 7, 9, 11, 14)
                 const name = columns[7] ? columns[7].trim() : '';
                 const patientDischargeRaw = columns[9] ? columns[9].trim() : '';
                 const practitionerDischargeRaw = columns[11] ? columns[11].trim() : '';
-                const overallDischargeRaw = columns[13] ? columns[13].trim() : '';
+                const overallDischargeRaw = columns[14] ? columns[14].trim() : '';
                 
                 console.log(`Row ${i+1}: Name="${name}", Patient="${patientDischargeRaw}", Practitioner="${practitionerDischargeRaw}", Overall="${overallDischargeRaw}"`);
                 
